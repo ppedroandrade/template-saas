@@ -2,6 +2,7 @@ import 'server-only';
 
 import Stripe from 'stripe';
 import { db } from '@/app/lib/firebase';
+import resend from '@/app/lib/resend';
 
 export async function handleStripeSubscription(
   event: Stripe.CheckoutSessionCompletedEvent
@@ -11,9 +12,12 @@ export async function handleStripeSubscription(
 
     const metadata = event.data.object.metadata;
     const userId = metadata?.userId;
+    const userEmail =
+      event.data.object.customer_email ||
+      event.data.object.customer_details?.email;
 
-    if (!userId) {
-      console.error('User ID not found in metadata');
+    if (!userId || !userEmail) {
+      console.error('User ID or email not found in metadata');
       return;
     }
 
@@ -21,5 +25,17 @@ export async function handleStripeSubscription(
       stripeSubscriptionId: event.data.object.subscription,
       subscriptionStatus: 'active',
     });
+
+    const { data, error } = await resend.emails.send({
+      from: 'Acme <me@pedroandrade.dev>',
+      to: [userEmail],
+      subject: 'Assinatura criada com sucesso',
+      text: 'Pagamento realizado com sucesso! Você já pode usar o serviço.',
+    });
+
+    if (error) {
+      console.error('Error sending email:', error);
+    }
+    console.log(data);
   }
 }

@@ -1,3 +1,4 @@
+import resend from '@/app/lib/resend';
 import { PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
 
 export async function handleMercadoPagoPayment(paymentData: PaymentResponse) {
@@ -10,4 +11,16 @@ export async function handleMercadoPagoPayment(paymentData: PaymentResponse) {
     testeId,
     paymentData,
   });
+
+  const { data, error } = await resend.emails.send({
+    from: 'Acme <me@pedroandrade.dev>',
+    to: [userEmail],
+    subject: 'Assinatura criada com sucesso',
+    text: 'Pagamento realizado com sucesso! Você já pode usar o serviço.',
+  });
+
+  if (error) {
+    console.error('Error sending email:', error);
+  }
+  console.log(data);
 }
