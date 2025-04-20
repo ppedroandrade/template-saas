@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   const paymentData = await payment.get({ id: paymentId });
 
   if (paymentData.status === 'approved' || paymentData.status !== null) {
-    return NextResponse.redirect(new URL(`sucess`, req.url));
+    return NextResponse.redirect(new URL(`/sucess`, req.url));
   }
 
   return NextResponse.redirect(new URL(`/`, req.url));
